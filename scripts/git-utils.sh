@@ -25,7 +25,7 @@ popd >/dev/null
 
 export OSSIMLABS_URL="https://github.com/ossimlabs"
 export RADIANTBLUE_URL="https://github.com/radiantbluetechnologies"
-export RADIANTBLUE_FILES=("ossim-msp ossim-private")
+export RADIANTBLUE_FILES=("cucumber-oc2s isa omar-merge-to-master o2-paas ossim-msp ossim-private")
 export OSSIMLABS_FILES=("omar omar-docs omar-disk-cleanup omar-config-server omar-eureka-server omar-turbine-server omar-zuul-server omar-base omar-ossim-base ossim ossim-ci ossim-gui ossim-oms ossim-planet ossim-plugins \
  ossim-vagrant ossim-video ossim-wms omar-avro omar-common omar-core omar-download omar-geoscript omar-hibernate-spatial omar-ingest-metrics\
  omar-jpip omar-mensa  omar-oms omar-openlayers omar-opir omar-ossimtools omar-raster omar-scdf-indexer omar-scdf-notifier-email omar-scdf-s3-extractor-filter omar-scdf-s3-filter omar-scdf-s3-uploader omar-scdf-stager omar-scdf-sqs omar-scdf-file-parser omar-scdf-downloader omar-scdf-aggregator omar-scdf-extractor omar-security omar-service-proxy\
@@ -59,45 +59,50 @@ function cloneRepos {
     for file in $RADIANTBLUE_FILES ; do
       if [ ! -e $file ] ; then
         cloneFile $RADIANTBLUE_URL/$file  $file
+      else
+        echo "Repo $file already exists"
       fi
     done
 
     for file in $OSSIMLABS_FILES ; do
       if [ ! -e $file ] ; then
         cloneFile $OSSIMLABS_URL/$file $file
+      else
+        echo "Repo $file already exists"
       fi
     done
 }
 
 function gitCommandOnRepos {
-    for file in $RADIANTBLUE_FILES ; do
-      if [ -e $file ] ; then
-        gitCommandOnRepo $file $*
-      fi
-    done
+      for file in $RADIANTBLUE_FILES ; do
+        if [ -e $file ] ; then
+          gitCommandOnRepo $file $*
+        fi
+      done
 
-    for file in $OSSIMLABS_FILES ; do
-      if [ -e $file ] ; then
-        gitCommandOnRepo $file $*
-      fi
-    done
+      for file in $OSSIMLABS_FILES ; do
+        if [ -e $file ] ; then
+          gitCommandOnRepo $file $*
+        fi
+      done
 }
-
-
-if [[ $1 == "clone" || $1 == "clone" ]]; then
-   echo "ABOUT TO clone REPOSITORIES"
-   checkoutRepos $*
-
-elif [[ $1 == "checkout" ]]; then
-   echo "ABOUT TO CHECKOUT branch ${@:2}"
-   gitCommandOnRepos $*
-elif [[ $1 == "pull" ]]; then
-   echo "ABOUT TO PULL REPOS"
-   gitCommandOnRepos $*
-elif [[ $1 == "status"  || $1 == "STATUS" ]]; then
-   echo "ABOUT TO CHECK STATUS OF REPOS"
-   gitCommandOnRepos $*
+if [ $# -le 0 ] ; then
+     echo "Usage: git-utils.sh <command>"
+     echo "commands: "pull" OR "checkout" OR "status" "
 else
-   echo "Usage: git-utils.sh <command>"
-   echo "commands: "pull" OR "checkout" OR "status""
+  if [[ $1 == "clone" || $1 == "clone" ]]; then
+     echo "ABOUT TO clone REPOSITORIES"
+     cloneRepos $*
+  elif [[ $1 == "checkout" ]]; then
+     echo "ABOUT TO CHECKOUT branch ${@:2}"
+     gitCommandOnRepos $*
+  elif [[ $1 == "pull" ]]; then
+     echo "ABOUT TO PULL REPOS"
+     gitCommandOnRepos $*
+  elif [[ $1 == "status"  || $1 == "STATUS" ]]; then
+     echo "ABOUT TO CHECK STATUS OF REPOS"
+     gitCommandOnRepos $*
+  else
+     gitCommandOnRepo $*
+  fi
 fi
