@@ -87,8 +87,12 @@ function gitCommandOnRepos {
       done
 }
 if [ $# -le 0 ] ; then
-     echo "Usage: git-utils.sh <command>"
-     echo "commands: "pull" OR "checkout" OR "status" "
+     echo "Usage: git-utils.sh <command> <args>"
+     echo "  commands: pull | checkout | status "
+     echo "  args: Any additional valid git arguments"
+     echo "Usage 2: git-utils.sh <repo> <command> <args>"
+     echo "  commands: Any supported git command"
+     echo "  args: Any additional valid git arguments"
 else
   if [[ $1 == "clone" || $1 == "clone" ]]; then
      echo "ABOUT TO clone REPOSITORIES"
