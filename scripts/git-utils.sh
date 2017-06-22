@@ -35,35 +35,36 @@ export OSSIMLABS_FILES=("omar omar-docs omar-disk-cleanup omar-config-server oma
  omar-scdf-s3-extractor-filter")
 
 
-function checkoutFile {
+function cloneFile {
     git clone $* 
 }
 
 function gitCommandOnRepo {
     repoRelativePath=$1
-    command=$2
-    echo "Entering directory $STARTING_DIRECTORY/$repoRelativePath"
+#    command=$2
+    echo "Entering directory $ROOT_DIR/$repoRelativePath"
     if [ -d $ROOT_DIR/$repoRelativePath ] ; then
       pushd $ROOT_DIR/$repoRelativePath
-      git $command
-      echo "Going back to directory $STARTING_DIRECTORY"
+#      git $command
+      git ${@:2}
+      echo "Going back to directory $ROOT_DIR"
       echo
       popd > /dev/null
     else
-      echo "Directory ${repoRelativePath} does not exist...Skipping directory"
+      echo "Directory ${ROOT_DIR} does not exist...Skipping directory"
     fi
 }
 
-function checkoutRepos {
+function cloneRepos {
     for file in $RADIANTBLUE_FILES ; do
       if [ ! -e $file ] ; then
-        checkoutFile $RADIANTBLUE_URL/$file  $file
+        cloneFile $RADIANTBLUE_URL/$file  $file
       fi
     done
 
     for file in $OSSIMLABS_FILES ; do
       if [ ! -e $file ] ; then
-        checkoutFile $OSSIMLABS_URL/$file $file
+        cloneFile $OSSIMLABS_URL/$file $file
       fi
     done
 }
@@ -71,28 +72,32 @@ function checkoutRepos {
 function gitCommandOnRepos {
     for file in $RADIANTBLUE_FILES ; do
       if [ -e $file ] ; then
-        gitCommandOnRepo $file $1
+        gitCommandOnRepo $file $*
       fi
     done
 
     for file in $OSSIMLABS_FILES ; do
       if [ -e $file ] ; then
-        gitCommandOnRepo $file $1
+        gitCommandOnRepo $file $*
       fi
     done
 }
 
 
-if [[ $1 == "checkout" || $1 == "CHECKOUT" ]]; then
-    echo "ABOUT TO CHECKOUT REPOSITORIES"
-    checkoutRepos
-elif [[ $1 == "pull" || $1 == "PULL" ]]; then
-    echo "ABOUT TO PULL REPOS"
-    gitCommandOnRepos pull
+if [[ $1 == "clone" || $1 == "clone" ]]; then
+   echo "ABOUT TO clone REPOSITORIES"
+   checkoutRepos $*
+
+elif [[ $1 == "checkout" ]]; then
+   echo "ABOUT TO CHECKOUT branch ${@:2}"
+   gitCommandOnRepos $*
+elif [[ $1 == "pull" ]]; then
+   echo "ABOUT TO PULL REPOS"
+   gitCommandOnRepos $*
 elif [[ $1 == "status"  || $1 == "STATUS" ]]; then
-    echo "ABOUT TO CHECK STATUS OF REPOS"
-    gitCommandOnRepos status
+   echo "ABOUT TO CHECK STATUS OF REPOS"
+   gitCommandOnRepos $*
 else
-    echo "Usage: git-utils.sh <command>"
-    echo "commands: "pull" OR "checkout" OR "status""
+   echo "Usage: git-utils.sh <command>"
+   echo "commands: "pull" OR "checkout" OR "status""
 fi
